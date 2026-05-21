@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecaKids Ultra Pro Max V4 - Plataforma Científica Integral</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+    
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .print-container { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: { 500: '#4f46e5', 600: '#4338ca' } } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100 min-h-screen">
+    
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- BASES DE DATOS Y GENERADORES ---
+        const namesClass1 = ["Hugo T.", "Sofía M.", "Mateo R.", "Leo G.", "Lucas P.", "Martín S.", "Daniel N.", "Alejandro V.", "Manuel B.", "Álvaro J.", "Adrián C.", "Enzo F.", "Mario L.", "Diego H.", "Marcos A.", "Eva D.", "Alba G.", "Emma R.", "Daniela M.", "Noa S.", "Valeria P.", "Claudia K.", "María L.", "Lucía F.", "Martina J.", "Alma N.", "Chloe B.", "Mía V.", "Carmen C.", "Elena G."];
+        const namesClass2 = ["Pablo M.", "Sergio T.", "Jorge R.", "Iván L.", "Carlos V.", "Miguel B.", "David A.", "Álex J.", "Bruno F.", "Óliver S.", "Thiago H.", "Fabio C.", "Gonzalo G.", "Izan M.", "Gael N.", "Eric P.", "Julia D.", "Sara R.", "Lara M.", "Inés S.", "Vega V.", "Paula B.", "Irene F.", "Alicia C.", "Clara G.", "Ainara L.", "Olivia H.", "Ainhoa M.", "Nerea J.", "Rocío P."];
+        const namesClass3 = ["Javier R.", "Héctor M.", "Rubén G.", "Víctor S.", "Raúl F.", "Isaac L.", "Samuel B.", "Ismael A.", "Francisco T.", "José H.", "Juan C.", "Tomás V.", "Nicolás P.", "Alan M.", "Denis G.", "Alberto J.", "Marta S.", "Ana B.", "Belén R.", "Andrea M.", "Natalia F.", "Celia C.", "Cristina G.", "Laura L.", "Marina H.", "Silvia V.", "Rebeca P.", "Nuria D.", "Ángela M.", "Leire J."];
+
+        const motorProfiles = ["Especialista Locomoción", "Destreza Manipulativa", "Control de Estabilidad", "Perfil Equilibrado", "Desarrollo en Progreso"];
+        const learningStyles = ["Reto Individual", "Cooperativo", "Descubrimiento Guiado", "Asignación de Tareas", "Resolución de Problemas"];
+        const currentMissions = ["El vuelo del proyectil", "La senda del ninja", "Equilibrio en el abismo", "El circuito de postas", "Lanzamiento con diana"];
+        
+        const generateClassData = (className, namesArray, stage, baseAge) => {
+            return {
+                id: className.replace(/\s+/g, '-').toLowerCase(),
+                name: className,
+                stage: stage,
+                baseAge: baseAge,
+                athletes: namesArray.map((name, index) => {
+                    const seed = index + baseAge;
+                    const baseRpe = 2 + (index % 5);
+                    const athleteAge = baseAge + (index % 4) - 1; 
+                    
+                    return {
+                        id: index + 1,
+                        name: name,
+                        profile: motorProfiles[index % motorProfiles.length],
+                        style: learningStyles[(index + 2) % learningStyles.length],
+                        mission: currentMissions[index % currentMissions.length],
+                        skills: {
+                            locomocion: 40 + (seed * 7) % 56,
+                            estabilidad: 45 + (seed * 5) % 51,
+                            manipulacion: 35 + (seed * 9) % 61
+                        },
+                        alpha: {
+                            edad: athleteAge,
+                            peso: Math.round(20 + (athleteAge * 3) + (index % 15) - 5),
+                            altura: Math.round(115 + (athleteAge * 5.5) + (index % 20) - 8),
+                            salto: Math.round(100 + (athleteAge * 6) + (index * 2) % 45),
+                            fuerza: Math.round(8 + (athleteAge * 1.2) + (index % 6)),
+                            navette: Math.round(2 + (seed % 6))
+                        },
+                        rpe: baseRpe,
+                        rpeHistory: [
+                            Math.max(1, baseRpe - 2 + (seed % 3)), 
+                            Math.max(1, baseRpe - 1 + (seed % 2)), 
+                            Math.max(1, baseRpe + (seed % 3)), 
+                            baseRpe
+                        ],
+                        wellness: { sueno: 3 + (index % 3), energia: 3 + (seed % 3) },
+                        asistencia: true,
+                        acwr: {
+                            aguda: 300 + (seed * 15) % 350,
+                            cronica: 350 + (seed * 5) % 200
+                        },
+                        social: {
+                            rol: ["Líder", "Integrador", "Neutro", "Neutro", "Aislado"][(seed * 3) % 5]
+                        },
+                        biomecanica: {
+                            saltoUnipodalIzq: 15 + (seed % 12),
+                            saltoUnipodalDer: 15 + ((seed + (index%5)) % 12),
+                            fuerzaAgarreIzq: 8 + (seed % 5),
+                            fuerzaAgarreDer: 8 + ((seed + (index%3)) % 5)
+                        },
+                        // NUEVO: Datos Neurocognitivos
+                        neuro: {
+                            reaccion: 220 + (seed * 13) % 180, // ms (220 - 400)
+                            precision: 70 + (seed * 7) % 30, // % (70 - 100)
+                            memoria: 5 + (seed % 5) // 1-10
+                        }
+                    };
+                })
+            };
+        };
+
+        const initialDataset = [
+            generateClassData("Clase A (6-7 años)", namesClass1, "Fase del Descubrimiento", 6),
+            generateClassData("Clase B (8-9 años)", namesClass2, "Fase de Consolidación", 8),
+            generateClassData("Clase C (10-12 años)", namesClass3, "Fase de Especialización", 10)
+        ];
+
+        // --- FUNCIONES MATEMÁTICAS CIENTÍFICAS ---
+        const calcularIMC = (peso, alturaCm) => {
+            if (!peso || !alturaCm) return 0;
+            const alturaM = alturaCm / 100;
+            return (peso / (alturaM * alturaM)).toFixed(1);
+        };
+
+        const calcularVO2Max = (palier, edad) => {
+            if (!palier) return 0;
+            const V = 8 + (0.5 * palier);
+            const vo2 = 31.025 + (3.238 * V) - (3.248 * edad) + (0.1536 * V * edad);
+            return vo2.toFixed(1);
+        };
+
+        const calcularMotorGlobal = (skills) => {
+            return Math.round(((skills?.locomocion || 0) + (skills?.estabilidad || 0) + (skills?.manipulacion || 0)) / 3);
+        };
+
+        const calcularReadiness = (sueno, energia, rpe) => {
+            const s = sueno || 3;
+            const e = energia || 3;
+            const r = rpe || 3;
+            const score = Math.round(((s + e) / 10) * 60 + ((10 - r) / 10) * 40);
+            
+            let color = "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50";
+            let label = "Óptimo (Apto para Impacto de Carga)";
+            
+            if (score < 45) {
+                color = "text-rose-500 bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/50";
+                label = "Crítico (Modificación de Sesión Requerida)";
+            } else if (score < 70) {
+                color = "text-amber-500 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50";
+                label = "Precaución (Ajustar Intensidad)";
+            }
+            return { score, color, label };
+        };
+
+        const calcularRitmosVAM = (palier) => {
+            if (!palier) return { vam: 0, ritmo100: "--:--", ritmo80: "--:--" };
+            const vam = 8 + (0.5 * palier);
+            const formatPace = (speedKmh) => {
+                if (speedKmh <= 0) return "--:--";
+                const totalSeconds = 3600 / speedKmh;
+                const min = Math.floor(totalSeconds / 60);
+                const sec = Math.round(totalSeconds % 60);
+                return `${min}:${sec < 10 ? '0' : ''}${sec} min/km`;
+            };
+            return { vam: vam.toFixed(1), ritmo100: formatPace(vam), ritmo80: formatPace(vam * 0.8) };
+        };
+
+        const calcularPHV = (edad, peso, altura) => {
+            const e = edad || 8;
+            const p = peso || 30;
+            const al = altura || 130;
+            
+            if (e >= 12 || (e >= 11 && (al > 150 || p > 45))) {
+                return { estado: "Post-PHV (Fase de Consolidación)", color: "text-purple-500 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/50", short: "Post-PHV" };
+            } else if (e >= 10 && e < 12 && (al > 140 || p > 38)) {
+                return { estado: "Pico PHV (Máxima Aceleración)", color: "text-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-950/20 border-fuchsia-200 dark:border-fuchsia-900/50", short: "Pico PHV" };
+            } else if (e >= 9) {
+                return { estado: "Pre-Estirón Tardío", color: "text-cyan-500 bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200 dark:border-cyan-900/50", short: "Pre-PHV Tardío" };
+            } else {
+                return { estado: "Pre-Estirón (Inmaduro)", color: "text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50", short: "Pre-PHV" };
+            }
+        };
+
+        const calcularRiesgoLesion = (readinessScore, phvShort) => {
+            if (readinessScore < 50 && phvShort === "Pico PHV") {
+                return { nivel: "ALTO RIESGO", color: "bg-rose-500 text-white", icon: "⚠️", desc: "Alta fatiga durante pico de crecimiento. Riesgo de Osgood-Schlatter o Sever." };
+            }
+            if (readinessScore < 60 || phvShort === "Pico PHV") {
+                return { nivel: "PRECAUCIÓN", color: "bg-amber-500 text-white", icon: "⚡", desc: "Vigilar cargas de impacto y pliometría." };
+            }
+            return { nivel: "RIESGO BAJO", color: "bg-emerald-500 text-white", icon: "✅", desc: "Tejidos adaptados a la carga actual." };
+        };
+
+        const calcularACWR = (aguda, cronica) => {
+            if (!cronica || cronica === 0) return { ratio: 0, estado: "Sin datos", color: "text-slate-500" };
+            const ratio = (aguda / cronica).toFixed(2);
+            
+            if (ratio > 1.5) return { ratio, estado: "Peligro (Sobrecarga)", color: "text-rose-500 bg-rose-50 dark:bg-rose-900/20 border-rose-200" };
+            if (ratio >= 0.8 && ratio <= 1.3) return { ratio, estado: "Sweet Spot (Óptimo)", color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200" };
+            if (ratio > 1.3 && ratio <= 1.5) return { ratio, estado: "Precaución", color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20 border-amber-200" };
+            return { ratio, estado: "Infracarga (Desentrenamiento)", color: "text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200" };
+        };
+
+        const calcularAsimetria = (izq, der) => {
+            const max = Math.max(izq, der);
+            const min = Math.min(izq, der);
+            if (max === 0) return { asi: 0, color: "text-slate-500", alerta: false };
+            const asi = (((max - min) / max) * 100).toFixed(1);
+            
+            if (asi > 15) return { asi, color: "text-rose-500 font-black", alerta: true };
+            if (asi > 10) return { asi, color: "text-amber-500 font-bold", alerta: false };
+            return { asi, color: "text-emerald-500", alerta: false };
+        };
+
+
+        // --- COMPONENTES AUXILIARES (GRÁFICOS) ---
+        const SkillsRadar = ({ locomocion, estabilidad, manipulacion, isDarkMode }) => {
+            const gridColor = isDarkMode ? "#334155" : "#cbd5e1";
+            const getPos = (val, angle) => {
+                const r = ((val || 0) / 100) * 65;
+                const rad = (angle * Math.PI) / 180;
+                return { x: 100 + r * Math.cos(rad), y: 100 + r * Math.sin(rad) };
+            };
+            const p1 = getPos(locomocion, -90), p2 = getPos(estabilidad, 30), p3 = getPos(manipulacion, 150);
+
+            return (
+                <div className="relative flex justify-center items-center my-2">
+                    <svg width="200" height="200" className="overflow-visible">
+                        {[20, 40, 60, 80, 100].map(lvl => {
+                            const l1 = getPos(lvl, -90), l2 = getPos(lvl, 30), l3 = getPos(lvl, 150);
+                            return <polygon key={lvl} points={`${l1.x},${l1.y} ${l2.x},${l2.y} ${l3.x},${l3.y}`} fill="none" stroke={gridColor} strokeWidth="1" strokeDasharray={lvl === 100 ? "0" : "3 3"} />
+                        })}
+                        <line x1="100" y1="100" x2={getPos(100, -90).x} y2={getPos(100, -90).y} stroke={gridColor} strokeWidth="1" />
+                        <line x1="100" y1="100" x2={getPos(100, 30).x} y2={getPos(100, 30).y} stroke={gridColor} strokeWidth="1" />
+                        <line x1="100" y1="100" x2={getPos(100, 150).x} y2={getPos(100, 150).y} stroke={gridColor} strokeWidth="1" />
+                        <polygon points={`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`} fill="rgba(79, 70, 229, 0.3)" stroke="#4f46e5" strokeWidth="2" />
+                        <circle cx={p1.x} cy={p1.y} r="4" fill="#4f46e5" /><circle cx={p2.x} cy={p2.y} r="4" fill="#10b981" /><circle cx={p3.x} cy={p3.y} r="4" fill="#f43f5e" />
+                    </svg>
+                </div>
+            );
+        };
+
+        const Sparkline = ({ data }) => {
+            if (!data || data.length === 0) return null;
+            const max = 10, min = 0, width = 60, height = 20;
+            const points = data.map((d, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - ((d - min) / (max - min)) * height;
+                return `${x},${y}`;
+            }).join(" ");
+            
+            return (
+                <svg width={width} height={height} className="overflow-visible stroke-indigo-500 dark:stroke-indigo-400">
+                    <polyline points={points} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx={(data.length - 1) * (width / (data.length - 1))} cy={height - ((data[data.length-1] - min) / (max - min)) * height} r="2" className="fill-indigo-500" />
+                </svg>
+            );
+        };
+
+        // --- VISTAS DE LA APLICACIÓN ---
+
+        const DashboardView = ({ classes, classIdx }) => {
+            const currentClass = classes[classIdx];
+            let totalMotor = 0, totalRpe = 0, alerts = 0, present = 0;
+            
+            currentClass.athletes.forEach(a => {
+                totalMotor += calcularMotorGlobal(a.skills);
+                totalRpe += a.rpe || 0;
+                if (a.rpe > 6) alerts++;
+                if (a.asistencia) present++;
+            });
+            
+            const avgMotor = Math.round(totalMotor / currentClass.athletes.length) || 0;
+            const avgRpe = (totalRpe / currentClass.athletes.length).toFixed(1) || 0;
+            const attendanceRate = Math.round((present / currentClass.athletes.length) * 100) || 0;
+
+            return (
+                <div className="space-y-6 animate-fade">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 uppercase">Índice Motor Medio</div>
+                            <div className="text-2xl font-black mt-1 text-indigo-600 dark:text-indigo-400">{avgMotor} / 100</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 uppercase">Carga Percibida (RPE)</div>
+                            <div className="text-2xl font-black mt-1 text-emerald-500">{avgRpe} / 10</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 uppercase">Alertas Fatiga</div>
+                            <div className="text-2xl font-black mt-1 text-rose-500">{alerts} Críticas</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 uppercase">Asistencia</div>
+                            <div className="text-2xl font-black mt-1 text-amber-500">{attendanceRate}%</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AthleteView = ({ classes, classIdx, athleteId, isDarkMode }) => {
+            const currentClass = classes[classIdx];
+            const athlete = currentClass.athletes.find(a => a.id === athleteId) || currentClass.athletes[0];
+            
+            const globalScore = calcularMotorGlobal(athlete?.skills);
+            const imc = calcularIMC(athlete?.alpha?.peso, athlete?.alpha?.altura);
+            const vo2max = calcularVO2Max(athlete?.alpha?.navette, athlete?.alpha?.edad || currentClass?.baseAge);
+            
+            const readiness = calcularReadiness(athlete?.wellness?.sueno, athlete?.wellness?.energia, athlete?.rpe);
+            const ritmos = calcularRitmosVAM(athlete?.alpha?.navette);
+            const maduracion = calcularPHV(athlete?.alpha?.edad, athlete?.alpha?.peso, athlete?.alpha?.altura);
+            const riesgoLesion = calcularRiesgoLesion(readiness.score, maduracion.short);
+
+            const handlePrint = () => window.print();
+
+            return (
+                <div className="animate-fade print-container space-y-6">
+                    <div className="flex justify-end mb-4 no-print">
+                        <button onClick={handlePrint} className="bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-xl text-xs font-bold shadow hover:scale-105 transition-transform flex items-center gap-2">
+                            🖨️ Generar Informe Clínico PDF
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="bg-gradient-to-tr from-indigo-950 via-indigo-900 to-slate-900 text-white p-6 rounded-3xl shadow-md flex justify-between items-start print-container relative overflow-hidden">
+                                <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl text-xs font-bold flex items-center gap-1 ${riesgoLesion.color}`}>
+                                    {riesgoLesion.icon} {riesgoLesion.nivel}
+                                </div>
+                                <div>
+                                    <span className="bg-white/10 text-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-mono mt-2 inline-block">EXPEDIENTE ID-{athlete.id}</span>
+                                    <h2 className="text-2xl font-black mt-2">{athlete.name} <span className="text-sm font-normal text-indigo-300">({athlete?.alpha?.edad} años)</span></h2>
+                                    <p className="text-indigo-200 text-xs mt-1">{currentClass.name} • {currentClass.stage}</p>
+                                    <div className="flex flex-wrap gap-2 mt-3 no-print">
+                                        <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold px-2 py-0.5 rounded-md">{athlete.profile}</span>
+                                        <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-md">Estilo: {athlete.style}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/10 text-center min-w-[100px] mt-6">
+                                    <div className="text-[9px] uppercase tracking-wider text-indigo-300 font-bold">Índice Global</div>
+                                    <div className="text-4xl font-black mt-1">{globalScore}</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm print-container">
+                                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-4">⚙️ Reajuste Psicomotriz</h3>
+                                <div className="space-y-4">
+                                    {[
+                                        { k: 'locomocion', l: 'Locomoción', c: 'text-indigo-600' },
+                                        { k: 'estabilidad', l: 'Estabilidad', c: 'text-emerald-600' },
+                                        { k: 'manipulacion', l: 'Manipulación', c: 'text-rose-600' }
+                                    ].map(s => (
+                                        <div key={s.k} className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl flex justify-between items-center">
+                                            <span className="text-sm font-bold">{s.l}</span>
+                                            <div className="flex items-center gap-4 w-1/2">
+                                                <div className="flex-1 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                                                    <div className={`h-full bg-current ${s.c}`} style={{ width: `${athlete.skills?.[s.k] || 0}%` }}></div>
+                                                </div>
+                                                <span className={`font-black ${s.c} w-10 text-right`}>{athlete.skills?.[s.k] || 0}%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border dark:border-slate-800 shadow-sm flex flex-col items-center print-container">
+                                <span className="text-xs font-bold uppercase text-slate-400 mb-2">Biometría Funcional</span>
+                                <SkillsRadar {...athlete.skills} isDarkMode={isDarkMode} />
+                            </div>
+                            
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border dark:border-slate-800 shadow-sm print-container">
+                                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3 text-center">🧬 Fisiología y Carga</h4>
+                                <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                                    <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded-xl">
+                                        <div className="text-[10px] text-slate-400 uppercase">IMC Actual</div>
+                                        <div className="font-black text-slate-700 dark:text-white text-base">{imc}</div>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded-xl">
+                                        <div className="text-[10px] text-slate-400 uppercase">VO2Máx Est.</div>
+                                        <div className="font-black text-indigo-600 dark:text-indigo-400 text-base">{vo2max} <span className="text-[9px]">ml/kg</span></div>
+                                    </div>
+                                    <div className="col-span-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl flex justify-between items-center mt-2">
+                                        <div className="text-left">
+                                            <div className="text-[10px] text-slate-400 uppercase">Tendencia RPE</div>
+                                            <div className="font-black">Últimas sesiones</div>
+                                        </div>
+                                        <Sparkline data={athlete.rpeHistory} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm print-container">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                            <span>🔬 Métricas Avanzadas de Rendimiento y Maduración Biológica</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className={`p-4 rounded-2xl border ${readiness.color} flex flex-col justify-between`}>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">Índice de Readiness</div>
+                                    <div className="text-2xl font-black mt-1">{readiness.score}%</div>
+                                </div>
+                                <div className="text-[11px] font-bold mt-2 font-mono leading-tight">{readiness.label}</div>
+                            </div>
+
+                            <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between">
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Velocidad Aeróbica Máxima (VAM)</div>
+                                    <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{ritmos.vam} <span className="text-xs">km/h</span></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-1 text-[10px] font-mono mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                    <div><span className="text-slate-400">Z5 (100%):</span> <strong className="text-slate-700 dark:text-slate-200">{ritmos.ritmo100}</strong></div>
+                                    <div><span className="text-slate-400">Z3 (80%):</span> <strong className="text-slate-700 dark:text-slate-200">{ritmos.ritmo80}</strong></div>
+                                </div>
+                            </div>
+
+                            <div className={`p-4 rounded-2xl border ${maduracion.color} flex flex-col justify-between`}>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">Maduración Biológica (PHV)</div>
+                                    <div className="text-sm font-black mt-2 leading-snug">{maduracion.estado}</div>
+                                </div>
+                                <div className="text-[9px] font-bold mt-2 opacity-70 font-mono">Ecuación Predictiva Somática Estudiante</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AlphaView = ({ classes, classIdx, setClasses }) => {
+            const currentClass = classes[classIdx];
+
+            const handleAlphaChange = (id, metric, val) => {
+                setClasses(prev => prev.map((c, cI) => {
+                    if (cI !== classIdx) return c;
+                    return {
+                        ...c,
+                        athletes: c.athletes.map(a => a.id === id ? { ...a, alpha: { ...a.alpha, [metric]: parseFloat(val) || 0 } } : a)
+                    };
+                }));
+            };
+
+            const exportToCSV = () => {
+                const headers = ["ID", "Alumno", "Edad", "Masa(kg)", "Estatura(cm)", "IMC", "Salto(cm)", "Fuerza(kg)", "Navette(Palier)", "VO2Max(ml/kg/min)"];
+                const rows = currentClass.athletes.map(a => [
+                    a.id,
+                    `"${a.name}"`,
+                    a.alpha?.edad || 0,
+                    a.alpha?.peso || 0,
+                    a.alpha?.altura || 0,
+                    calcularIMC(a.alpha?.peso, a.alpha?.altura),
+                    a.alpha?.salto || 0,
+                    a.alpha?.fuerza || 0,
+                    a.alpha?.navette || 0,
+                    calcularVO2Max(a.alpha?.navette, a.alpha?.edad || currentClass.baseAge)
+                ]);
+                
+                const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `Bateria_ALPHA_${currentClass.name.replace(/\s+/g, '_')}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-6 shadow-sm overflow-x-auto animate-fade hide-scrollbar">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-base font-black flex items-center gap-2">
+                            <span>📏 Batería ALPHA-Fitness + Fisiología</span>
+                            <span className="text-[10px] bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 px-2 py-1 rounded font-mono">Cálculo Aut. Léger et al.</span>
+                        </h3>
+                        <button onClick={exportToCSV} className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors flex items-center gap-1">
+                            📥 Exportar CSV
+                        </button>
+                    </div>
+                    <table className="w-full text-left text-xs min-w-[800px]">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 border-b dark:border-slate-700">
+                            <tr>
+                                <th className="p-3">Alumno</th><th className="p-3">Edad</th><th className="p-3">Masa (kg)</th><th className="p-3">Est. (cm)</th>
+                                <th className="p-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-tl-lg">IMC (Auto)</th>
+                                <th className="p-3">Salto (cm)</th><th className="p-3">Fuerza (kg)</th><th className="p-3">Navette (Palier)</th>
+                                <th className="p-3 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-tr-lg">VO2Máx (Auto)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {currentClass.athletes.map(a => {
+                                const imc = calcularIMC(a.alpha?.peso, a.alpha?.altura);
+                                const vo2 = calcularVO2Max(a.alpha?.navette, a.alpha?.edad || currentClass.baseAge);
+                                return (
+                                    <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                        <td className="p-3 font-bold">{a.name}</td>
+                                        <td className="p-3 text-slate-500">{a.alpha?.edad}</td>
+                                        <td className="p-3"><input type="number" value={a.alpha?.peso || ''} onChange={e => handleAlphaChange(a.id, 'peso', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300 focus:border-brand-500" /></td>
+                                        <td className="p-3"><input type="number" value={a.alpha?.altura || ''} onChange={e => handleAlphaChange(a.id, 'altura', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300 focus:border-brand-500" /></td>
+                                        <td className="p-3 font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10">{imc}</td>
+                                        <td className="p-3"><input type="number" value={a.alpha?.salto || ''} onChange={e => handleAlphaChange(a.id, 'salto', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className="p-3"><input type="number" value={a.alpha?.fuerza || ''} onChange={e => handleAlphaChange(a.id, 'fuerza', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className="p-3"><input type="number" step="0.5" value={a.alpha?.navette || ''} onChange={e => handleAlphaChange(a.id, 'navette', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className="p-3 font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10">{vo2}</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        };
+
+        const BiomecanicaView = ({ classes, classIdx, setClasses }) => {
+            const currentClass = classes[classIdx];
+
+            const handleBioChange = (id, metric, val) => {
+                setClasses(prev => prev.map((c, cI) => {
+                    if (cI !== classIdx) return c;
+                    return {
+                        ...c,
+                        athletes: c.athletes.map(a => a.id === id ? { ...a, biomecanica: { ...a.biomecanica, [metric]: parseFloat(val) || 0 } } : a)
+                    };
+                }));
+            };
+
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-6 shadow-sm overflow-x-auto animate-fade hide-scrollbar">
+                    <div className="mb-4">
+                        <h3 className="text-base font-black flex items-center gap-2">📐 Perfil Biomecánico y Asimetrías</h3>
+                        <p className="text-xs text-slate-500 mt-1">Detección de descompensaciones (Índice ASI > 15% = Riesgo Alto de Lesión).</p>
+                    </div>
+                    <table className="w-full text-left text-xs min-w-[800px]">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 border-b dark:border-slate-700">
+                            <tr>
+                                <th className="p-3">Alumno</th>
+                                <th className="p-3 text-center border-l dark:border-slate-700" colSpan="3">Salto Unipodal (cm)</th>
+                                <th className="p-3 text-center border-l dark:border-slate-700" colSpan="3">Fuerza Agarre (kg)</th>
+                            </tr>
+                            <tr className="text-[10px] uppercase">
+                                <th></th>
+                                <th className="p-2 border-l dark:border-slate-700">Izq</th><th className="p-2">Der</th><th className="p-2 bg-slate-100 dark:bg-slate-800/50">Índice ASI</th>
+                                <th className="p-2 border-l dark:border-slate-700">Izq</th><th className="p-2">Der</th><th className="p-2 bg-slate-100 dark:bg-slate-800/50">Índice ASI</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {currentClass.athletes.map(a => {
+                                const asiSalto = calcularAsimetria(a.biomecanica?.saltoUnipodalIzq, a.biomecanica?.saltoUnipodalDer);
+                                const asiFuerza = calcularAsimetria(a.biomecanica?.fuerzaAgarreIzq, a.biomecanica?.fuerzaAgarreDer);
+                                
+                                return (
+                                    <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                        <td className="p-3 font-bold flex items-center gap-2">
+                                            {a.name} 
+                                            {(asiSalto.alerta || asiFuerza.alerta) && <span className="text-rose-500" title="Riesgo por Asimetría">⚠️</span>}
+                                        </td>
+                                        
+                                        <td className="p-3 border-l dark:border-slate-700"><input type="number" value={a.biomecanica?.saltoUnipodalIzq || ''} onChange={e => handleBioChange(a.id, 'saltoUnipodalIzq', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className="p-3"><input type="number" value={a.biomecanica?.saltoUnipodalDer || ''} onChange={e => handleBioChange(a.id, 'saltoUnipodalDer', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className={`p-3 bg-slate-50 dark:bg-slate-800/30 ${asiSalto.color}`}>{asiSalto.asi}%</td>
+                                        
+                                        <td className="p-3 border-l dark:border-slate-700"><input type="number" value={a.biomecanica?.fuerzaAgarreIzq || ''} onChange={e => handleBioChange(a.id, 'fuerzaAgarreIzq', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className="p-3"><input type="number" value={a.biomecanica?.fuerzaAgarreDer || ''} onChange={e => handleBioChange(a.id, 'fuerzaAgarreDer', e.target.value)} className="w-12 bg-transparent outline-none border-b border-dashed border-slate-300" /></td>
+                                        <td className={`p-3 bg-slate-50 dark:bg-slate-800/30 ${asiFuerza.color}`}>{asiFuerza.asi}%</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        };
+
+        // NUEVA VISTA: Neurociencia y Cognición
+        const NeuroView = ({ classes, classIdx, setClasses }) => {
+            const currentClass = classes[classIdx];
+
+            const handleNeuroChange = (id, metric, val) => {
+                setClasses(prev => prev.map((c, cI) => {
+                    if (cI !== classIdx) return c;
+                    return {
+                        ...c,
+                        athletes: c.athletes.map(a => a.id === id ? { ...a, neuro: { ...a.neuro, [metric]: parseFloat(val) || 0 } } : a)
+                    };
+                }));
+            };
+
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-6 shadow-sm overflow-x-auto animate-fade hide-scrollbar">
+                    <div className="mb-4">
+                        <h3 className="text-base font-black flex items-center gap-2">🧠 Perfil Neurocognitivo</h3>
+                        <p className="text-xs text-slate-500 mt-1">Evaluación de velocidad de procesamiento, toma de decisiones y memoria de trabajo.</p>
+                    </div>
+                    <table className="w-full text-left text-xs min-w-[600px]">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 border-b dark:border-slate-700">
+                            <tr>
+                                <th className="p-3">Alumno</th>
+                                <th className="p-3">Tiempo Reacción (ms)</th>
+                                <th className="p-3">Precisión Decisión (%)</th>
+                                <th className="p-3">Memoria Trabajo (1-10)</th>
+                                <th className="p-3 text-center">Estado Cognitivo</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {currentClass.athletes.map(a => {
+                                const tr = a.neuro?.reaccion || 0;
+                                let estado = "Óptimo";
+                                let color = "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
+                                if (tr > 350) { estado = "Lento"; color = "text-rose-500 bg-rose-50 dark:bg-rose-900/20"; }
+                                else if (tr > 280) { estado = "Promedio"; color = "text-amber-500 bg-amber-50 dark:bg-amber-900/20"; }
+
+                                return (
+                                    <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                        <td className="p-3 font-bold">{a.name}</td>
+                                        <td className="p-3"><input type="number" value={a.neuro?.reaccion || ''} onChange={e => handleNeuroChange(a.id, 'reaccion', e.target.value)} className="w-16 bg-transparent outline-none border-b border-dashed border-slate-300" /> ms</td>
+                                        <td className="p-3"><input type="number" value={a.neuro?.precision || ''} onChange={e => handleNeuroChange(a.id, 'precision', e.target.value)} className="w-16 bg-transparent outline-none border-b border-dashed border-slate-300" /> %</td>
+                                        <td className="p-3"><input type="number" value={a.neuro?.memoria || ''} onChange={e => handleNeuroChange(a.id, 'memoria', e.target.value)} className="w-16 bg-transparent outline-none border-b border-dashed border-slate-300" /> / 10</td>
+                                        <td className="p-3 text-center"><span className={`px-2 py-1 rounded text-[10px] font-bold ${color}`}>{estado}</span></td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        };
+
+        const SessionLoggerView = ({ classes, classIdx, setClasses }) => {
+            const currentClass = classes[classIdx];
+            const [sessionData, setSessionData] = useState({});
+            const [globalDuration, setGlobalDuration] = useState(60);
+            const [saved, setSaved] = useState(false);
+
+            useEffect(() => {
+                const initial = {};
+                currentClass.athletes.forEach(a => {
+                    initial[a.id] = { rpe: 5, duration: globalDuration };
+                });
+                setSessionData(initial);
+                setSaved(false);
+            }, [classIdx, currentClass.athletes, globalDuration]);
+
+            const handleRpeChange = (id, val) => {
+                setSessionData(prev => ({ ...prev, [id]: { ...prev[id], rpe: parseInt(val) || 0 } }));
+            };
+
+            const handleSaveSession = () => {
+                setClasses(prev => prev.map((c, cI) => {
+                    if (cI !== classIdx) return c;
+                    return {
+                        ...c,
+                        athletes: c.athletes.map(a => {
+                            const data = sessionData[a.id];
+                            if (!data) return a;
+                            const sessionLoad = data.rpe * data.duration;
+                            return {
+                                ...a,
+                                rpe: data.rpe,
+                                acwr: {
+                                    ...a.acwr,
+                                    aguda: (a.acwr?.aguda || 0) + sessionLoad
+                                }
+                            };
+                        })
+                    };
+                }));
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            };
+
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-6 shadow-sm animate-fade">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h3 className="text-xl font-black flex items-center gap-2">📝 Registro de Sesión (sRPE)</h3>
+                            <p className="text-xs text-slate-500 mt-1">Calcula la carga de la sesión (Duración x RPE) y actualiza el ACWR automáticamente.</p>
+                        </div>
+                        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border dark:border-slate-700">
+                            <label className="text-xs font-bold text-slate-500">Duración Global (min):</label>
+                            <input type="number" value={globalDuration} onChange={e => setGlobalDuration(parseInt(e.target.value) || 0)} className="w-16 bg-white dark:bg-slate-900 border dark:border-slate-600 rounded p-1 text-sm font-bold text-center outline-none" />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                        {currentClass.athletes.map(a => {
+                            const data = sessionData[a.id] || { rpe: 5, duration: globalDuration };
+                            const load = data.rpe * data.duration;
+                            return (
+                                <div key={a.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col gap-3">
+                                    <div className="font-bold text-sm">{a.name}</div>
+                                    <div>
+                                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                                            <span>RPE (1-10)</span>
+                                            <span className="text-indigo-600 dark:text-indigo-400">{data.rpe}</span>
+                                        </div>
+                                        <input type="range" min="1" max="10" value={data.rpe} onChange={e => handleRpeChange(a.id, e.target.value)} className="w-full accent-indigo-600" />
+                                    </div>
+                                    <div className="text-[10px] font-mono text-right text-slate-500">
+                                        Carga: <strong className="text-slate-800 dark:text-slate-200">{load} UA</strong>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex justify-end">
+                        <button onClick={handleSaveSession} disabled={saved} className={`px-6 py-3 rounded-xl text-sm font-bold shadow-md transition-all flex items-center gap-2 ${saved ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
+                            {saved ? '✅ Sesión Guardada y ACWR Actualizado' : '💾 Guardar Sesión'}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const AnalyticsView = ({ classes, classIdx }) => {
+            const currentClass = classes[classIdx];
+            
+            let phvCounts = { "Pre-PHV": 0, "Pre-PHV Tardío": 0, "Pico PHV": 0, "Post-PHV": 0 };
+            let riskAthletes = [];
+
+            currentClass.athletes.forEach(a => {
+                const maduracion = calcularPHV(a.alpha?.edad, a.alpha?.peso, a.alpha?.altura);
+                const readiness = calcularReadiness(a.wellness?.sueno, a.wellness?.energia, a.rpe);
+                const riesgo = calcularRiesgoLesion(readiness.score, maduracion.short);
+                
+                if (phvCounts[maduracion.short] !== undefined) phvCounts[maduracion.short]++;
+                
+                if (riesgo.nivel === "ALTO RIESGO" || riesgo.nivel === "PRECAUCIÓN") {
+                    riskAthletes.push({ name: a.name, riesgo: riesgo, readiness: readiness.score });
+                }
+            });
+
+            const total = currentClass.athletes.length;
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2">🧬 Distribución Madurativa (PHV)</h3>
+                        <div className="space-y-4">
+                            {Object.entries(phvCounts).map(([key, count]) => {
+                                const percentage = Math.round((count / total) * 100) || 0;
+                                return (
+                                    <div key={key}>
+                                        <div className="flex justify-between text-xs font-bold mb-1">
+                                            <span>{key}</span>
+                                            <span className="text-slate-500">{count} atletas ({percentage}%)</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5">
+                                            <div className="bg-indigo-500 h-2.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-4 font-mono">Útil para agrupar por edad biológica (Bio-Banding) en lugar de edad cronológica.</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2">⚠️ Alertas de Riesgo de Lesión</h3>
+                        {riskAthletes.length === 0 ? (
+                            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm font-bold text-center">
+                                ✅ Ningún atleta en riesgo crítico actualmente.
+                            </div>
+                        ) : (
+                            <div className="space-y-3 max-h-[250px] overflow-y-auto hide-scrollbar">
+                                {riskAthletes.map((a, i) => (
+                                    <div key={i} className={`p-3 rounded-xl border ${a.riesgo.color.replace('text-white', 'bg-opacity-10 text-slate-800 dark:text-white')}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-sm">{a.riesgo.icon} {a.name}</span>
+                                            <span className="text-xs font-black">Readiness: {a.readiness}%</span>
+                                        </div>
+                                        <div className="text-[10px] mt-1 opacity-80">{a.riesgo.desc}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const AcwrView = ({ classes, classIdx }) => {
+            const currentClass = classes[classIdx];
+            
+            return (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm animate-fade">
+                    <div className="mb-6">
+                        <h3 className="font-black text-xl flex items-center gap-2">🔋 Control de Carga (ACWR)</h3>
+                        <p className="text-xs text-slate-500 mt-1">Ratio entre Carga Aguda (esta semana) y Carga Crónica (media últimas 4 semanas).</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {currentClass.athletes.map(a => {
+                            const acwr = calcularACWR(a.acwr?.aguda, a.acwr?.cronica);
+                            return (
+                                <div key={a.id} className={`p-4 rounded-2xl border ${acwr.color}`}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-bold text-sm">{a.name}</span>
+                                        <span className="text-lg font-black">{acwr.ratio}</span>
+                                    </div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider mb-3">{acwr.estado}</div>
+                                    <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-current pt-2 opacity-70">
+                                        <span>Aguda: {a.acwr?.aguda} UA</span>
+                                        <span>Crónica: {a.acwr?.cronica} UA</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const SocioView = ({ classes, classIdx }) => {
+            const currentClass = classes[classIdx];
+            
+            let roles = { "Líder": [], "Integrador": [], "Neutro": [], "Aislado": [] };
+            
+            currentClass.athletes.forEach(a => {
+                const rol = a.social?.rol || "Neutro";
+                if(roles[rol]) roles[rol].push(a.name);
+            });
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2">🤝 Dinámica de Grupo (Sociograma)</h3>
+                        <p className="text-xs text-slate-500 mb-6">Identificación de roles sociales para mejorar la cohesión y prevenir el abandono deportivo.</p>
+                        
+                        <div className="space-y-4">
+                            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-2xl">
+                                <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2">👑 Líderes Naturales</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {roles["Líder"].map((n, i) => <span key={i} className="bg-white dark:bg-slate-800 text-xs font-bold px-2 py-1 rounded shadow-sm">{n}</span>)}
+                                </div>
+                            </div>
+                            
+                            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+                                <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">🫂 Integradores</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {roles["Integrador"].map((n, i) => <span key={i} className="bg-white dark:bg-slate-800 text-xs font-bold px-2 py-1 rounded shadow-sm">{n}</span>)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2 text-rose-500">🚨 Alertas Psicosociales</h3>
+                        {roles["Aislado"].length === 0 ? (
+                            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm font-bold text-center">
+                                ✅ Ningún alumno detectado en riesgo de aislamiento social.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <p className="text-xs text-slate-500 mb-2">Alumnos con bajo nivel de conexión con sus compañeros. Requieren dinámicas de integración urgentes.</p>
+                                {roles["Aislado"].map((n, i) => (
+                                    <div key={i} className="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl flex items-center gap-3">
+                                        <span className="text-xl">👤</span>
+                                        <div>
+                                            <div className="font-bold text-sm text-rose-700 dark:text-rose-400">{n}</div>
+                                            <div className="text-[10px] text-rose-500">Riesgo de abandono deportivo / Bullying</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const PlanningView = ({ classes, classIdx }) => {
+            const currentClass = classes[classIdx];
+            
+            let totalReadiness = 0;
+            currentClass.athletes.forEach(a => {
+                totalReadiness += calcularReadiness(a.wellness?.sueno, a.wellness?.energia, a.rpe).score;
+            });
+            const avgReadiness = Math.round(totalReadiness / currentClass.athletes.length) || 0;
+
+            let planType = "Mantenimiento";
+            let planColor = "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800";
+            let days = [];
+
+            if (avgReadiness > 70) {
+                planType = "Sobrecarga Progresiva (Carga Alta)";
+                planColor = "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800";
+                days = [
+                    { d: "Lunes", t: "Fuerza Base + Pliometría Baja", i: "Alta" },
+                    { d: "Miércoles", t: "Desarrollo VAM (Juegos Reducidos)", i: "Muy Alta" },
+                    { d: "Viernes", t: "Habilidades Motrices + Velocidad", i: "Media-Alta" }
+                ];
+            } else if (avgReadiness < 50) {
+                planType = "Descarga / Recuperación Activa";
+                planColor = "text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-800";
+                days = [
+                    { d: "Lunes", t: "Movilidad + Juegos Cooperativos", i: "Baja" },
+                    { d: "Miércoles", t: "Técnica Analítica (Sin impacto)", i: "Baja" },
+                    { d: "Viernes", t: "Juego Libre Estructurado", i: "Media-Baja" }
+                ];
+            } else {
+                days = [
+                    { d: "Lunes", t: "Repaso Técnico + Fuerza Core", i: "Media" },
+                    { d: "Miércoles", t: "Circuito Multideporte", i: "Media-Alta" },
+                    { d: "Viernes", t: "Juegos de Toma de Decisión", i: "Media" }
+                ];
+            }
+
+            return (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm animate-fade">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h3 className="font-black text-xl flex items-center gap-2">📅 Propuesta de Microciclo (IA)</h3>
+                            <p className="text-xs text-slate-500 mt-1">Basado en el Readiness promedio de la clase ({avgReadiness}%)</p>
+                        </div>
+                        <div className={`px-4 py-2 rounded-xl border font-bold text-sm ${planColor}`}>
+                            Foco: {planType}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {days.map((day, i) => (
+                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                                <div className="font-black text-indigo-600 dark:text-indigo-400 mb-2">{day.d}</div>
+                                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{day.t}</div>
+                                <div className="mt-3 inline-block px-2 py-1 bg-white dark:bg-slate-900 rounded text-[10px] font-bold text-slate-500 uppercase tracking-wider shadow-sm">
+                                    Intensidad: {day.i}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const RankingView = ({ classes }) => {
+            const allAthletes = useMemo(() => {
+                let all = [];
+                classes.forEach(c => {
+                    c.athletes.forEach(a => {
+                        all.push({ ...a, className: c.name, age: a.alpha?.edad || c.baseAge, globalMotor: calcularMotorGlobal(a.skills) });
+                    });
+                });
+                return all;
+            }, [classes]);
+
+            const topMotor = [...allAthletes].sort((a, b) => b.globalMotor - a.globalMotor).slice(0, 10);
+            const topVo2 = [...allAthletes].sort((a, b) => parseFloat(calcularVO2Max(b.alpha?.navette, b.age)) - parseFloat(calcularVO2Max(a.alpha?.navette, a.age))).slice(0, 10);
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2">🥇 Top 10: Índice Motor Global</h3>
+                        <div className="space-y-3">
+                            {topMotor.map((a, i) => (
+                                <div key={a.id + a.className} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${i<3 ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'}`}>{i+1}</div>
+                                        <div>
+                                            <div className="font-bold text-sm">{a.name}</div>
+                                            <div className="text-[10px] text-slate-400">{a.className}</div>
+                                        </div>
+                                    </div>
+                                    <div className="font-black text-indigo-600 dark:text-indigo-400 text-lg">{a.globalMotor}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                        <h3 className="font-black text-lg mb-4 flex items-center gap-2">🫀 Top 10: Salud Cardiovascular (VO2Máx)</h3>
+                        <div className="space-y-3">
+                            {topVo2.map((a, i) => (
+                                <div key={a.id + a.className} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${i<3 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>{i+1}</div>
+                                        <div>
+                                            <div className="font-bold text-sm">{a.name}</div>
+                                            <div className="text-[10px] text-slate-400">{a.className}</div>
+                                        </div>
+                                    </div>
+                                    <div className="font-black text-emerald-600 dark:text-emerald-400 text-lg">{calcularVO2Max(a.alpha?.navette, a.age)}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // NUEVA VISTA: Comparador Head-to-Head
+        const CompareView = ({ classes, classIdx, isDarkMode }) => {
+            const currentClass = classes[classIdx];
+            const [idA, setIdA] = useState(currentClass.athletes[0]?.id);
+            const [idB, setIdB] = useState(currentClass.athletes[1]?.id || currentClass.athletes[0]?.id);
+
+            const athA = currentClass.athletes.find(a => a.id === idA) || currentClass.athletes[0];
+            const athB = currentClass.athletes.find(a => a.id === idB) || currentClass.athletes[0];
+
+            const renderAthleteCard = (athlete) => {
+                if(!athlete) return null;
+                const globalScore = calcularMotorGlobal(athlete.skills);
+                const maduracion = calcularPHV(athlete.alpha?.edad, athlete.alpha?.peso, athlete.alpha?.altura);
+                const acwr = calcularACWR(athlete.acwr?.aguda, athlete.acwr?.cronica);
+                
+                return (
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm flex flex-col items-center">
+                        <h4 className="text-xl font-black mb-1">{athlete.name}</h4>
+                        <span className="text-xs text-slate-500 mb-4">{athlete.alpha?.edad} años • {athlete.profile}</span>
+                        
+                        <div className="w-full flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl mb-4">
+                            <span className="text-xs font-bold text-slate-500">Índice Motor Global</span>
+                            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{globalScore}</span>
+                        </div>
+
+                        <SkillsRadar {...athlete.skills} isDarkMode={isDarkMode} />
+
+                        <div className="w-full space-y-3 mt-4">
+                            <div className={`p-3 rounded-xl border ${maduracion.color}`}>
+                                <div className="text-[10px] font-bold uppercase opacity-70">Maduración (PHV)</div>
+                                <div className="font-bold text-sm">{maduracion.short}</div>
+                            </div>
+                            <div className={`p-3 rounded-xl border ${acwr.color}`}>
+                                <div className="text-[10px] font-bold uppercase opacity-70">Carga ACWR</div>
+                                <div className="font-bold text-sm">{acwr.ratio} ({acwr.estado})</div>
+                            </div>
+                            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
+                                <div className="text-[10px] font-bold uppercase opacity-70 text-slate-500">Neurocognición</div>
+                                <div className="flex justify-between mt-1">
+                                    <span className="text-xs font-bold">Reacción: {athlete.neuro?.reaccion}ms</span>
+                                    <span className="text-xs font-bold">Precisión: {athlete.neuro?.precision}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="animate-fade space-y-6">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="w-full md:w-1/3">
+                            <label className="text-[10px] font-bold uppercase text-slate-400">Atleta A</label>
+                            <select value={idA} onChange={e => setIdA(parseInt(e.target.value))} className="w-full bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100/50 p-3 rounded-xl text-xs font-bold text-indigo-700 outline-none cursor-pointer">
+                                {currentClass.athletes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="text-2xl font-black text-slate-300 dark:text-slate-600">VS</div>
+                        <div className="w-full md:w-1/3">
+                            <label className="text-[10px] font-bold uppercase text-slate-400">Atleta B</label>
+                            <select value={idB} onChange={e => setIdB(parseInt(e.target.value))} className="w-full bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100/50 p-3 rounded-xl text-xs font-bold text-rose-700 outline-none cursor-pointer">
+                                {currentClass.athletes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {renderAthleteCard(athA)}
+                        {renderAthleteCard(athB)}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP PRINCIPAL ---
+        function DecaKidsApp() {
+            // NOTA: Clave cambiada a v4 para forzar la carga de los nuevos datos neurocognitivos
+            const [classes, setClasses] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('decaKidsData_UltraPro_v4');
+                    if (saved) return JSON.parse(saved);
+                } catch (e) { console.error("Error cargando LocalStorage", e); }
+                return initialDataset;
+            });
+
+            useEffect(() => {
+                try {
+                    localStorage.setItem('decaKidsData_UltraPro_v4', JSON.stringify(classes));
+                } catch (e) { console.error("Error guardando en LocalStorage", e); }
+            }, [classes]);
+
+            const [view, setView] = useState('dashboard');
+            const [isDarkMode, setIsDarkMode] = useState(false);
+            const [classIdx, setClassIdx] = useState(0);
+            const [athleteId, setAthleteId] = useState(1);
+
+            useEffect(() => {
+                if (isDarkMode) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+            }, [isDarkMode]);
+
+            const activeClass = classes[classIdx] || classes[0];
+
+            return (
+                <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 min-h-screen pb-20">
+                    <header className="bg-white dark:bg-slate-900 p-4 rounded-3xl border dark:border-slate-800 shadow-sm flex justify-between items-center no-print">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-md">D</div>
+                            <div>
+                                <h1 className="text-xl font-black">DecaKids <span className="text-indigo-600">ULTRA PRO MAX</span></h1>
+                                <p className="text-[10px] text-emerald-500 font-bold uppercase flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Guardado Activo (v4)
+                                </p>
+                            </div>
+                        </div>
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className="bg-slate-100 dark:bg-slate-800 p-2 rounded-xl hover:bg-slate-200 transition-colors">{isDarkMode ? '☀️' : '🌙'}</button>
+                    </header>
+
+                    <nav className="bg-slate-200/60 dark:bg-slate-900 p-1.5 rounded-2xl flex gap-1 overflow-x-auto hide-scrollbar border dark:border-slate-800 no-print">
+                        {[
+                            { id: 'dashboard', i: '📊', l: 'Dashboard' }, 
+                            { id: 'athlete', i: '👤', l: 'Alumno' }, 
+                            { id: 'compare', i: '🆚', l: 'Comparador' }, // NUEVO
+                            { id: 'alpha', i: '📏', l: 'ALPHA + Fisio' }, 
+                            { id: 'biomecanica', i: '📐', l: 'Biomecánica' }, 
+                            { id: 'neuro', i: '🧠', l: 'Neurociencia' }, // NUEVO
+                            { id: 'logger', i: '📝', l: 'Reg. Sesión' }, 
+                            { id: 'analytics', i: '📈', l: 'Análisis' },
+                            { id: 'acwr', i: '🔋', l: 'Carga ACWR' },
+                            { id: 'socio', i: '🤝', l: 'Sociograma' },
+                            { id: 'planning', i: '📅', l: 'Planificación' },
+                            { id: 'ranking', i: '🏆', l: 'Ranking' }
+                        ].map(t => (
+                            <button key={t.id} onClick={() => setView(t.id)} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${view === t.id ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-white/40'}`}>
+                                <span>{t.i}</span>{t.l}
+                            </button>
+                        ))}
+                    </nav>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 no-print">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold uppercase text-slate-400">Grupo de Intervención</label>
+                            <select value={classIdx} onChange={e => { const idx = parseInt(e.target.value); setClassIdx(idx); setAthleteId(classes[idx].athletes[0].id); }} className="w-full bg-white dark:bg-slate-900 border dark:border-slate-800 p-3 rounded-xl text-xs font-bold outline-none cursor-pointer">
+                                {classes.map((c, i) => <option key={i} value={i}>{c.name}</option>)}
+                            </select>
+                        </div>
+                        {view === 'athlete' && (
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold uppercase text-slate-400">Expediente Alumno</label>
+                                <select value={athleteId} onChange={e => setAthleteId(parseInt(e.target.value))} className="w-full bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100/50 p-3 rounded-xl text-xs font-bold text-indigo-700 outline-none cursor-pointer">
+                                    {activeClass.athletes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    <main>
+                        {view === 'dashboard' && <DashboardView classes={classes} classIdx={classIdx} />}
+                        {view === 'athlete' && <AthleteView classes={classes} classIdx={classIdx} athleteId={athleteId} isDarkMode={isDarkMode} />}
+                        {view === 'compare' && <CompareView classes={classes} classIdx={classIdx} isDarkMode={isDarkMode} />} {/* NUEVO */}
+                        {view === 'alpha' && <AlphaView classes={classes} classIdx={classIdx} setClasses={setClasses} />}
+                        {view === 'biomecanica' && <BiomecanicaView classes={classes} classIdx={classIdx} setClasses={setClasses} />} 
+                        {view === 'neuro' && <NeuroView classes={classes} classIdx={classIdx} setClasses={setClasses} />} {/* NUEVO */}
+                        {view === 'logger' && <SessionLoggerView classes={classes} classIdx={classIdx} setClasses={setClasses} />} 
+                        {view === 'analytics' && <AnalyticsView classes={classes} classIdx={classIdx} />}
+                        {view === 'acwr' && <AcwrView classes={classes} classIdx={classIdx} />}
+                        {view === 'socio' && <SocioView classes={classes} classIdx={classIdx} />}
+                        {view === 'planning' && <PlanningView classes={classes} classIdx={classIdx} />}
+                        {view === 'ranking' && <RankingView classes={classes} />}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DecaKidsApp />);
+    </script>
+</body>
+</html>
